@@ -1,10 +1,10 @@
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import StableDiffusionPipeline
 from diffusers.schedulers.scheduling_ddim import DDIMScheduler
 
-from src.utils import prepare
+from src.utils import prepare, save_images
 
 
-def inference(prompt):
+def inference(prompt: str):
     scheduler = DDIMScheduler.from_pretrained('CompVis/stable-diffusion-v1-4', subfolder='scheduler')
 
     pipe = StableDiffusionPipeline.from_pretrained(
@@ -12,9 +12,12 @@ def inference(prompt):
         scheduler=scheduler,
     ).to('mps')
 
-    image = pipe(prompt, batch_size=1, num_inference_steps=5).images[0]
+    batch_size = 2
+    prompts = [prompt for i in range(batch_size)]
 
-    image.save('out/astronaut_rides_horse.png')
+    images = pipe(prompts, num_inference_steps=5).images
+
+    save_images(images, prompt.replace(' ', '_'))
 
 
 if __name__ == '__main__':
