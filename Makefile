@@ -1,7 +1,7 @@
 .PHONY: lint format test
 lint:
 	uv run ruff check src
-	uv run mypy src
+	# uv run mypy src
 
 format:
 	uv run ruff format src

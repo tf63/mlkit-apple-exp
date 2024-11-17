@@ -1,12 +1,19 @@
 [project]
-name = "sample"
+name = "mlkit-apple-exp"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.8"
 dependencies = [
+    "accelerate>=1.0.1",
+    "diffusers>=0.31.0",
+    "huggingface-hub[cli]>=0.26.2",
+    "matplotlib>=3.7.5",
+    "numpy>=1.24.4",
+    "scipy>=1.10.1",
     "sub",
     "torch==2.3.0",
+    "transformers>=4.46.2",
 ]
 
 [tool.uv]
