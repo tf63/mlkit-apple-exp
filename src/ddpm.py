@@ -1,20 +1,25 @@
+import torch
 from diffusers.pipelines.ddpm.pipeline_ddpm import DDPMPipeline
 
-from src.utils import prepare
+from src.utils import ExperimentalContext, save_images
 
 
-def inference():
-    pipe = DDPMPipeline.from_pretrained('google/ddpm-cat-256').to('mps')
-    pipe.enable_attention_slicing()
+def inference(context: ExperimentalContext):
+    pipeline = DDPMPipeline.from_pretrained('google/ddpm-cat-256', torch_dtype=torch.float16).to(context.device)
+    pipeline.enable_attention_slicing()
 
-    images = pipe(batch_size=1, num_inference_steps=1000).images
+    batch_size = 1
 
-    for i, image in enumerate(images):
-        # save image
-        image.save(f'out/ddpm_generated_image{i}.png')
+    images = pipeline(
+        batch_size=batch_size,
+        generator=context.generator,
+        num_inference_steps=1000,
+    ).images
+
+    save_images(images, 'ddpm_generated')
 
 
 if __name__ == '__main__':
-    prepare()
+    context = ExperimentalContext(seed=42, device='mps')
 
-    inference()
+    inference(context=context)
