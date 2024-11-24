@@ -2,14 +2,10 @@
 
 ## セットアップ
 
-### 依存関係
+### Installation
 
 ```shell
-uv add torch==2.3.0 diffusers transformers accelerate
-```
-
-```shell
-uv add huggingface_hub[cli]
+uv sync
 ```
 
 ### huggingface CLI のログイン
@@ -23,3 +19,14 @@ huggingface-cli login
 ```
 
 `~/.cache/huggingface/token`にトークンが保存される
+
+### Model
+
+`~/.cache/huggingface/hub`にモデルが保存される
+
+### scheduler
+
+```python
+pipeline = DiffusionPipeline.from_pretrained(model_id)
+pipeline.scheduler.compatibles
+```
