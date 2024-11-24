@@ -18,15 +18,17 @@ from typing import List, Optional, Union
 
 import numpy as np
 import torch
-from diffusers.configuration_utils import register_to_config
-from diffusers.schedulers.scheduling_euler_ancestral_discrete import (
-    EulerAncestralDiscreteScheduler,
+from diffusers.schedulers.scheduling_euler_discrete import (
+    EulerDiscreteScheduler,
     betas_for_alpha_bar,
     rescale_zero_terminal_snr,
 )
 
+from diffusers.configuration_utils import register_to_config
+from diffusers.utils import is_scipy_available
 
-class PachedEulerAncestralDiscreteScheduler(EulerAncestralDiscreteScheduler):
+
+class PatchedEulerDiscreteScheduler(EulerDiscreteScheduler):
     @register_to_config
     def __init__(
         self,
@@ -36,10 +38,24 @@ class PachedEulerAncestralDiscreteScheduler(EulerAncestralDiscreteScheduler):
         beta_schedule: str = 'linear',
         trained_betas: Optional[Union[np.ndarray, List[float]]] = None,
         prediction_type: str = 'epsilon',
+        interpolation_type: str = 'linear',
+        use_karras_sigmas: Optional[bool] = False,
+        use_exponential_sigmas: Optional[bool] = False,
+        use_beta_sigmas: Optional[bool] = False,
+        sigma_min: Optional[float] = None,
+        sigma_max: Optional[float] = None,
         timestep_spacing: str = 'linspace',
+        timestep_type: str = 'discrete',  # can be "discrete" or "continuous"
         steps_offset: int = 0,
         rescale_betas_zero_snr: bool = False,
+        final_sigmas_type: str = 'zero',  # can be "zero" or "sigma_min"
     ):
+        if self.config.use_beta_sigmas and not is_scipy_available():
+            raise ImportError('Make sure to install scipy if you want to use beta sigmas.')
+        if sum([self.config.use_beta_sigmas, self.config.use_exponential_sigmas, self.config.use_karras_sigmas]) > 1:
+            raise ValueError(
+                'Only one of `config.use_beta_sigmas`, `config.use_exponential_sigmas`, `config.use_karras_sigmas` can be used.'
+            )
         if trained_betas is not None:
             self.betas = torch.tensor(trained_betas, dtype=torch.float32)
         elif beta_schedule == 'linear':
@@ -68,21 +84,31 @@ class PachedEulerAncestralDiscreteScheduler(EulerAncestralDiscreteScheduler):
             # FP16 smallest positive subnormal works well here
             self.alphas_cumprod[-1] = 2**-24
 
-        sigmas = np.array(((1 - self.alphas_cumprod) / self.alphas_cumprod) ** 0.5)
-        sigmas = np.concatenate([sigmas[::-1], [0.0]]).astype(np.float32)
-        self.sigmas = torch.from_numpy(sigmas)
+        sigmas = (((1 - self.alphas_cumprod) / self.alphas_cumprod) ** 0.5).flip(0)
+        timesteps = np.linspace(0, num_train_timesteps - 1, num_train_timesteps, dtype=float)[::-1].copy()
+        timesteps = torch.from_numpy(timesteps).to(dtype=torch.float32)
 
         # setable values
         self.num_inference_steps = None
-        timesteps = np.linspace(0, num_train_timesteps - 1, num_train_timesteps, dtype=float)[::-1].copy()
-        self.timesteps = torch.from_numpy(timesteps)
+
+        # TODO: Support the full EDM scalings for all prediction types and timestep types
+        if timestep_type == 'continuous' and prediction_type == 'v_prediction':
+            self.timesteps = torch.Tensor([0.25 * sigma.log() for sigma in sigmas])
+        else:
+            self.timesteps = timesteps
+
+        self.sigmas = torch.cat([sigmas, torch.zeros(1, device=sigmas.device)])
+
         self.is_scale_input_called = False
+        self.use_karras_sigmas = use_karras_sigmas
+        self.use_exponential_sigmas = use_exponential_sigmas
+        self.use_beta_sigmas = use_beta_sigmas
 
         self._step_index = None
         self._begin_index = None
         self.sigmas = self.sigmas.to('cpu')  # to avoid too much CPU/GPU communication
 
 
-from diffusers.schedulers import scheduling_euler_ancestral_discrete
+from diffusers.schedulers import scheduling_euler_discrete
 
-scheduling_euler_ancestral_discrete.EulerAncestralDiscreteScheduler = PachedEulerAncestralDiscreteScheduler
+scheduling_euler_discrete.EulerDiscreteScheduler = PatchedEulerDiscreteScheduler
