@@ -38,12 +38,13 @@ def inference(context: ExperimentalContext, prompt: str, guidance_scale=0.0, num
     ).images[0]
 
     # 画像の保存
-    image = make_image_grid([init_image, image], rows=1, cols=2)
-    context.save_image([image], prompt.replace(' ', '_'), f'n{num_inference_steps}_s{guidance_scale}')
+    image_compare = make_image_grid([init_image, image], rows=1, cols=2)
+    context.save_image(image, prompt.replace(' ', '_'), f'n{num_inference_steps}_s{guidance_scale}')
+    context.save_image(image_compare, prompt.replace(' ', '_'), f'n{num_inference_steps}_s{guidance_scale}_comp')
 
 
 if __name__ == '__main__':
     context = ExperimentalContext(seed=42, device='mps', root_dir=os.path.join('out', 'sdxl_turbo_img2img_cat'))
     prompt = 'cat wizard, gandalf, lord of the rings, detailed, fantasy, cute, adorable, Pixar, Disney, 8k'
 
-    inference(context=context, prompt=prompt)
+    inference(context=context, prompt=prompt, num_inference_steps=2)

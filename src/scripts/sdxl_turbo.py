@@ -63,5 +63,5 @@ if __name__ == '__main__':
         'a cat, fat, with white fur, with short legs',
     ]
 
-    inference(context=context, prompts=prompts)
+    inference(context=context, prompts=prompts, num_inference_steps=2)
     # inference_loop(context=context)
