@@ -14,24 +14,25 @@ def fix_seed(seed=0):
     torch.use_deterministic_algorithms = True
 
 
-def save_images(images, image_name):
-    for i, image in enumerate(images):
-        out_dir = os.path.join('out', image_name)
-        os.makedirs(out_dir, exist_ok=True)
-
-        out_path = os.path.join(out_dir, f'{image_name}_{i}.png')
-        image.save(out_path)
-
-        print(f'save to {out_path}')
-
-
 class ExperimentalContext:
-    def __init__(self, seed, device, out_dir='out'):
+    def __init__(self, seed, device, root_dir='out'):
         self.seed = seed
         self.device = device
+        torch.set_default_device(device)
+
         self.generator = torch.Generator(device)
         self.generator.manual_seed(seed)
 
-        torch.set_default_device(device)
-        os.makedirs('out', exist_ok=True)
+        self.root_dir = root_dir
+        os.makedirs(self.root_dir, exist_ok=True)
+
         fix_seed(seed)
+
+    def save_image(self, image, exp_name, image_name):
+        out_dir = os.path.join(self.root_dir, exp_name)
+        os.makedirs(out_dir, exist_ok=True)
+
+        out_path = os.path.join(out_dir, f'seed{self.seed}_{image_name}.png')
+        image.save(out_path)
+
+        print(f'Image has been saved successfully to {out_path}')
