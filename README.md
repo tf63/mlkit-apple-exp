@@ -30,3 +30,7 @@ huggingface-cli login
 pipeline = DiffusionPipeline.from_pretrained(model_id)
 pipeline.scheduler.compatibles
 ```
+
+### Performance
+
+https://huggingface.co/docs/diffusers/ja/stable_diffusion
