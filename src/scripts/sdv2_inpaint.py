@@ -1,6 +1,8 @@
 import src.patches.scheduling_euler_ancestral_discrete  # noqa
 
 import os
+
+import torch
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_inpaint import StableDiffusionInpaintPipeline
 
 from src.utils import ExperimentalContext
@@ -11,9 +13,9 @@ from diffusers.utils.pil_utils import make_image_grid
 def inference(context: ExperimentalContext, prompt: str, guidance_scale=0.0, num_inference_steps=2):
     # img2imgモデルの読み込み
     # https://huggingface.co/stabilityai/stable-diffusion-2-inpainting
-    pipeline_inpaint = StableDiffusionInpaintPipeline.from_pretrained('stabilityai/stable-diffusion-2-inpainting').to(
-        context.device
-    )
+    pipeline_inpaint = StableDiffusionInpaintPipeline.from_pretrained(
+        'stabilityai/stable-diffusion-2-inpainting', torch_dtype=torch.float16, variant='fp16'
+    ).to(context.device)
 
     # ソース画像･マスク画像の読み込み
     # https://huggingface.co/docs/diffusers/ja/tutorials/autopipeline
