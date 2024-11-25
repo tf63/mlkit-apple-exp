@@ -1,6 +1,5 @@
 import os
 
-import click
 import torch
 from diffusers.pipelines.ddpm.pipeline_ddpm import DDPMPipeline
 
@@ -20,11 +19,10 @@ def inference(pipeline, context: ExperimentalContext, batch_size, num_inference_
         context.save_image(image, 'uncond', f'i{i}_n{num_inference_steps}')
 
 
-@click.command()
 @options
 def main(seed, device):
     context = ExperimentalContext(seed=seed, device=device, root_dir=os.path.join('out', 'ddpm_cat'))
-    batch_size = 4
+    batch_size = 1
 
     # モデルの読み込み
     pipeline = DDPMPipeline.from_pretrained('google/ddpm-cat-256', torch_dtype=torch.float16).to(context.device)

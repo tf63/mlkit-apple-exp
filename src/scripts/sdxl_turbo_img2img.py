@@ -2,7 +2,6 @@ import src.patches.scheduling_euler_ancestral_discrete  # noqa
 
 import os
 
-import click
 import torch
 from diffusers.pipelines.stable_diffusion_xl.pipeline_stable_diffusion_xl import StableDiffusionXLPipeline
 from diffusers.pipelines.stable_diffusion_xl.pipeline_stable_diffusion_xl_img2img import (
@@ -40,7 +39,6 @@ def inference(pipeline_img2img, context: ExperimentalContext, prompt: str, guida
     context.save_image(image_compare, prompt.replace(' ', '_'), f'n{num_inference_steps}_s{guidance_scale}_comp')
 
 
-@click.command()
 @options
 def main(seed, device):
     prompt = 'cat wizard, gandalf, lord of the rings, detailed, fantasy, cute, adorable, Pixar, Disney, 8k'

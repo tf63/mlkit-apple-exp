@@ -1,7 +1,6 @@
 # https://huggingface.co/kandinsky-community/kandinsky-2-1-inpaint
 import os
 
-import click
 import torch
 from diffusers.pipelines.auto_pipeline import AutoPipelineForInpainting
 from diffusers.utils.loading_utils import load_image
@@ -39,7 +38,6 @@ def inference(pipeline_inpaint, context: ExperimentalContext, prompt: str, guida
     context.save_image(image_compare, prompt.replace(' ', '_'), f'n{num_inference_steps}_s{guidance_scale}_comp')
 
 
-@click.command()
 @options
 def main(seed, device):
     prompt = 'a bench'

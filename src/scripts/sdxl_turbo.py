@@ -3,7 +3,6 @@ import src.patches.scheduling_euler_ancestral_discrete  # noqa
 import os
 from typing import List
 
-import click
 import torch
 from diffusers.pipelines.stable_diffusion_xl.pipeline_stable_diffusion_xl import StableDiffusionXLPipeline
 
@@ -52,7 +51,6 @@ def inference_loop(pipeline, context: ExperimentalContext, guidance_scale=0.0, n
             context.save_image(image, prompts[i].replace(' ', '_'), f'i{i}_n{num_inference_steps}_s{guidance_scale}')
 
 
-@click.command()
 @options
 def main(seed, device):
     prompts = [

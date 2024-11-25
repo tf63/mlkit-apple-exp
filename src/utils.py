@@ -41,6 +41,7 @@ class ExperimentalContext:
 
 
 def options(func):
+    @click.command()
     @click.option('--seed', type=int, default=42, help='Random seed for reproducibility.')
     @click.option('--device', type=str, default='mps', help='Device to run the computation on.')
     @wraps(func)

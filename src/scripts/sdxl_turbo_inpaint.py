@@ -1,7 +1,6 @@
 import src.patches.scheduling_euler_ancestral_discrete  # noqa
 
 import os
-import click
 
 import torch
 from diffusers.pipelines.stable_diffusion_xl.pipeline_stable_diffusion_xl import StableDiffusionXLPipeline
@@ -43,7 +42,6 @@ def inference(pipeline_inpaint, context: ExperimentalContext, prompt: str, guida
     context.save_image(image_compare, prompt.replace(' ', '_'), f'n{num_inference_steps}_s{guidance_scale}_comp')
 
 
-@click.command()
 @options
 def main(seed, device):
     prompt = 'a bench'

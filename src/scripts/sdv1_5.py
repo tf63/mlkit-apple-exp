@@ -1,7 +1,6 @@
 import os
 from typing import List
 
-import click
 import torch
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import StableDiffusionPipeline
 from diffusers.schedulers.scheduling_ddim import DDIMScheduler
@@ -26,7 +25,6 @@ def inference(pipeline, context: ExperimentalContext, prompts: List[str], guidan
         context.save_image(image, prompts[i].replace(' ', '_'), f'n{num_inference_steps}_s{guidance_scale}')
 
 
-@click.command()
 @options
 def main(seed, device):
     prompts = [
