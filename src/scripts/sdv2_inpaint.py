@@ -23,9 +23,12 @@ def inference(context: ExperimentalContext, prompt: str, guidance_scale=0.0, num
     init_image = load_image(img_url).convert('RGB')
     mask_image = load_image(mask_url).convert('RGB')
 
+    negative_prompt = 'low quality, bad quality'
+
     # 推論
     image = pipeline_inpaint(
         prompt,
+        negative_prompt=negative_prompt,
         image=init_image,
         mask_image=mask_image,
         guidance_scale=guidance_scale,

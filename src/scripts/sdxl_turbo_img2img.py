@@ -27,9 +27,12 @@ def inference(context: ExperimentalContext, prompt: str, guidance_scale=0.0, num
     )
     init_image = init_image.resize((512, 512))
 
+    negative_prompt = 'low quality, bad quality'
+
     # 推論
     image = pipeline_img2img(
         prompt,
+        negative_prompt=negative_prompt,
         image=init_image,
         strength=0.5,
         guidance_scale=guidance_scale,

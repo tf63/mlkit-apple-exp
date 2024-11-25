@@ -19,9 +19,12 @@ def inference(context: ExperimentalContext, prompts: List[str], num_inference_st
         torch_dtype=torch.float16,
     ).to(context.device)
 
+    negative_prompts = ['low quality, bad quality' for _ in range(len(prompts))]
+
     # 推論
     images = pipeline(
         prompts,
+        negative_prompt=negative_prompts,
         num_inference_steps=num_inference_steps,
         generator=context.generator,
     ).images

@@ -15,9 +15,12 @@ def inference(context: ExperimentalContext, prompts: List[str], guidance_scale=0
         'stabilityai/sdxl-turbo', torch_dtype=torch.float16, variant='fp16'
     ).to(context.device)
 
+    negative_prompt = 'low quality, bad quality'
+
     # 推論
     images = pipeline(
         prompts,
+        negative_prompt=negative_prompt,
         guidance_scale=guidance_scale,
         num_inference_steps=num_inference_steps,
         generator=context.generator,
@@ -42,10 +45,12 @@ def inference_loop(context: ExperimentalContext, guidance_scale=0.0, num_inferen
             break
 
         prompts = [prompt for i in range(batch_size)]
+        negative_prompt = 'low quality, bad quality'
 
         # 推論
         images = pipeline(
             prompts,
+            negative_prompt=negative_prompt,
             guidance_scale=guidance_scale,
             num_inference_steps=num_inference_steps,
             generator=context.generator,
