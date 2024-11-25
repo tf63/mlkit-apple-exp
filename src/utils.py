@@ -1,6 +1,8 @@
 import os
 import random
+from functools import wraps
 
+import click
 import numpy as np
 import torch
 
@@ -36,3 +38,13 @@ class ExperimentalContext:
         image.save(out_path)
 
         print(f'Image has been saved successfully to {out_path}')
+
+
+def options(func):
+    @click.option('--seed', type=int, default=42, help='Random seed for reproducibility.')
+    @click.option('--device', type=str, default='mps', help='Device to run the computation on.')
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+
+    return wrapper

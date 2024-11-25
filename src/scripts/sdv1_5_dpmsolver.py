@@ -3,23 +3,15 @@ import src.patches.scheduling_dpmsolver_multistep  # noqa
 import os
 from typing import List
 
+import click
 import torch
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import StableDiffusionPipeline
 from diffusers.schedulers.scheduling_dpmsolver_multistep import DPMSolverMultistepScheduler
 
-from src.utils import ExperimentalContext
+from src.utils import ExperimentalContext, options
 
 
-def inference(context: ExperimentalContext, prompts: List[str], guidance_scale=0.0, num_inference_steps=50):
-    # モデルの読み込み
-    pipeline = StableDiffusionPipeline.from_pretrained(
-        'runwayml/stable-diffusion-v1-5',
-        torch_dtype=torch.float16,
-    ).to(context.device)
-
-    # スケジューラの読み込み
-    pipeline.scheduler = DPMSolverMultistepScheduler.from_config(pipeline.scheduler.config)
-
+def inference(pipeline, context: ExperimentalContext, prompts: List[str], guidance_scale=0.0, num_inference_steps=50):
     negative_prompts = ['low quality, bad quality' for _ in range(len(prompts))]
 
     # 推論
@@ -36,12 +28,34 @@ def inference(context: ExperimentalContext, prompts: List[str], guidance_scale=0
         context.save_image(image, prompts[i].replace(' ', '_'), f'n{num_inference_steps}_s{guidance_scale}')
 
 
-if __name__ == '__main__':
-    context = ExperimentalContext(seed=42, device='mps', root_dir=os.path.join('out', 'sdv1_5_dpmsolver'))
-
+@click.command()
+@options
+def main(seed, device):
     prompts = [
         'a cat, fat, with brown fur, with short legs',
         'a cat, fat, with white fur, with short legs',
     ]
 
-    inference(context=context, prompts=prompts, num_inference_steps=25, guidance_scale=2.0)
+    # モデルの読み込み
+    pipeline = StableDiffusionPipeline.from_pretrained(
+        'runwayml/stable-diffusion-v1-5',
+        torch_dtype=torch.float16,
+    ).to(device)
+
+    # スケジューラの読み込み
+    pipeline.scheduler = DPMSolverMultistepScheduler.from_config(pipeline.scheduler.config)
+
+    context = ExperimentalContext(seed=seed, device=device, root_dir=os.path.join('out', 'sdv1_5_dpmsolver'))
+    inference(pipeline=pipeline, context=context, prompts=prompts, num_inference_steps=25, guidance_scale=0.0)
+    context = ExperimentalContext(seed=seed, device=device, root_dir=os.path.join('out', 'sdv1_5_dpmsolver'))
+    inference(pipeline=pipeline, context=context, prompts=prompts, num_inference_steps=25, guidance_scale=1.0)
+    context = ExperimentalContext(seed=seed, device=device, root_dir=os.path.join('out', 'sdv1_5_dpmsolver'))
+    inference(pipeline=pipeline, context=context, prompts=prompts, num_inference_steps=25, guidance_scale=2.0)
+    context = ExperimentalContext(seed=seed, device=device, root_dir=os.path.join('out', 'sdv1_5_dpmsolver'))
+    inference(pipeline=pipeline, context=context, prompts=prompts, num_inference_steps=25, guidance_scale=4.0)
+    context = ExperimentalContext(seed=seed, device=device, root_dir=os.path.join('out', 'sdv1_5_dpmsolver'))
+    inference(pipeline=pipeline, context=context, prompts=prompts, num_inference_steps=25, guidance_scale=8.0)
+
+
+if __name__ == '__main__':
+    main()

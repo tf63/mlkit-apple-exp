@@ -1,26 +1,16 @@
 # https://huggingface.co/kandinsky-community/kandinsky-2-1-inpaint
 import os
 
+import click
 import torch
 from diffusers.pipelines.auto_pipeline import AutoPipelineForInpainting
-
-# from diffusers.pipelines.kandinsky.pipeline_kandinsky_inpaint import KandinskyInpaintPipeline
 from diffusers.utils.loading_utils import load_image
 from diffusers.utils.pil_utils import make_image_grid
 
-from src.utils import ExperimentalContext
+from src.utils import ExperimentalContext, options
 
 
-def inference(context: ExperimentalContext, prompt: str, guidance_scale=0.0, num_inference_steps=2):
-    # text2imgモデルの読み込み
-
-    pipeline_inpaint = AutoPipelineForInpainting.from_pretrained(
-        'kandinsky-community/kandinsky-2-1-inpaint', torch_dtype=torch.float16
-    ).to(context.device)
-    # pipeline_inpaint = KandinskyInpaintPipeline.from_pretrained(
-    #     'kandinsky-community/kandinsky-2-1-inpaint', torch_dtype=torch.float16
-    # ).to(context.device)
-
+def inference(pipeline_inpaint, context: ExperimentalContext, prompt: str, guidance_scale=0.0, num_inference_steps=2):
     negative_prompt = 'low quality, bad quality'
 
     # ソース画像･マスク画像の読み込み
@@ -49,9 +39,19 @@ def inference(context: ExperimentalContext, prompt: str, guidance_scale=0.0, num
     context.save_image(image_compare, prompt.replace(' ', '_'), f'n{num_inference_steps}_s{guidance_scale}_comp')
 
 
-if __name__ == '__main__':
-    context = ExperimentalContext(seed=42, device='mps', root_dir=os.path.join('out', 'kandinsky_inpaint_sample'))
+@click.command()
+@options
+def main(seed, device):
     prompt = 'a bench'
-    # prompt = 'A majestic tiger sitting on a bench'
+    # prompt = 'cat wizard, sitting on a bench'
 
-    inference(context=context, prompt=prompt, num_inference_steps=25)
+    pipeline_inpaint = AutoPipelineForInpainting.from_pretrained(
+        'kandinsky-community/kandinsky-2-1-inpaint', torch_dtype=torch.float16
+    ).to(device)
+
+    context = ExperimentalContext(seed=seed, device=device, root_dir=os.path.join('out', 'kandinsky_inpaint_sample'))
+    inference(pipeline_inpaint=pipeline_inpaint, context=context, prompt=prompt, num_inference_steps=25)
+
+
+if __name__ == '__main__':
+    main()

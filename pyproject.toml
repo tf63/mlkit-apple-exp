@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.8"
 dependencies = [
     "accelerate>=1.0.1",
+    "click>=8.1.7",
     "diffusers>=0.31.0",
     "huggingface-hub[cli]>=0.26.2",
     "matplotlib>=3.7.5",

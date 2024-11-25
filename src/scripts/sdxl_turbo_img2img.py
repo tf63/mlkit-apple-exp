@@ -1,26 +1,20 @@
 import src.patches.scheduling_euler_ancestral_discrete  # noqa
 
 import os
+
+import click
 import torch
 from diffusers.pipelines.stable_diffusion_xl.pipeline_stable_diffusion_xl import StableDiffusionXLPipeline
 from diffusers.pipelines.stable_diffusion_xl.pipeline_stable_diffusion_xl_img2img import (
     StableDiffusionXLImg2ImgPipeline,
 )
-
-from src.utils import ExperimentalContext
 from diffusers.utils.loading_utils import load_image
 from diffusers.utils.pil_utils import make_image_grid
 
+from src.utils import ExperimentalContext, options
 
-def inference(context: ExperimentalContext, prompt: str, guidance_scale=0.0, num_inference_steps=2):
-    # text2imgモデルの読み込み
-    pipeline_text2img = StableDiffusionXLPipeline.from_pretrained(
-        'stabilityai/sdxl-turbo', torch_dtype=torch.float16, variant='fp16'
-    ).to(context.device)
 
-    # img2imgモデルの読み込み
-    pipeline_img2img = StableDiffusionXLImg2ImgPipeline.from_pipe(pipeline_text2img).to(context.device)
-
+def inference(pipeline_img2img, context: ExperimentalContext, prompt: str, guidance_scale=0.0, num_inference_steps=2):
     # ソース画像の読み込み
     init_image = load_image(
         'https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/diffusers/cat.png'
@@ -46,8 +40,22 @@ def inference(context: ExperimentalContext, prompt: str, guidance_scale=0.0, num
     context.save_image(image_compare, prompt.replace(' ', '_'), f'n{num_inference_steps}_s{guidance_scale}_comp')
 
 
-if __name__ == '__main__':
-    context = ExperimentalContext(seed=42, device='mps', root_dir=os.path.join('out', 'sdxl_turbo_img2img_cat'))
+@click.command()
+@options
+def main(seed, device):
     prompt = 'cat wizard, gandalf, lord of the rings, detailed, fantasy, cute, adorable, Pixar, Disney, 8k'
 
-    inference(context=context, prompt=prompt, num_inference_steps=2)
+    # text2imgモデルの読み込み
+    pipeline_text2img = StableDiffusionXLPipeline.from_pretrained(
+        'stabilityai/sdxl-turbo', torch_dtype=torch.float16, variant='fp16'
+    ).to(device)
+
+    # img2imgモデルの読み込み
+    pipeline_img2img = StableDiffusionXLImg2ImgPipeline.from_pipe(pipeline_text2img).to(device)
+
+    context = ExperimentalContext(seed=seed, device=device, root_dir=os.path.join('out', 'sdxl_turbo_img2img_cat'))
+    inference(pipeline_img2img, context=context, prompt=prompt, num_inference_steps=2)
+
+
+if __name__ == '__main__':
+    main()
