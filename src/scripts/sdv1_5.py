@@ -8,7 +8,7 @@ from diffusers.schedulers.scheduling_ddim import DDIMScheduler
 from src.utils import ExperimentalContext
 
 
-def inference(context: ExperimentalContext, prompts: List[str], num_inference_steps=50):
+def inference(context: ExperimentalContext, prompts: List[str], guidance_scale=0.0, num_inference_steps=50):
     # スケジューラの読み込み
     scheduler = DDIMScheduler.from_pretrained('CompVis/stable-diffusion-v1-4', subfolder='scheduler')
 
@@ -25,13 +25,14 @@ def inference(context: ExperimentalContext, prompts: List[str], num_inference_st
     images = pipeline(
         prompts,
         negative_prompt=negative_prompts,
+        guidance_scale=guidance_scale,
         num_inference_steps=num_inference_steps,
         generator=context.generator,
     ).images
 
     # 画像の保存
     for i, image in enumerate(images):
-        context.save_image(image, prompts[i].replace(' ', '_'), f'i{i}_n{num_inference_steps}')
+        context.save_image(image, prompts[i].replace(' ', '_'), f'n{num_inference_steps}_s{guidance_scale}')
 
 
 if __name__ == '__main__':
@@ -42,4 +43,4 @@ if __name__ == '__main__':
         'a cat, fat, with white fur, with short legs',
     ]
 
-    inference(context=context, prompts=prompts, num_inference_steps=50)
+    inference(context=context, prompts=prompts, num_inference_steps=50, guidance_scale=2.0)

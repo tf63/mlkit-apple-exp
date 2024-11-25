@@ -54,4 +54,4 @@ if __name__ == '__main__':
     prompt = 'cat wizard, sitting on a bench'
     # prompt = 'A majestic tiger sitting on a bench'
 
-    inference(context=context, prompt=prompt, num_inference_steps=8)
+    inference(context=context, prompt=prompt, num_inference_steps=8, guidance_scale=0.0)
