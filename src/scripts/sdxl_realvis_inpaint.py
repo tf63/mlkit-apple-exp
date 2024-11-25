@@ -30,6 +30,8 @@ def inference(pipeline_inpaint, context: ExperimentalContext, prompt: str, guida
     image = pipeline_inpaint(
         prompt,
         negative_prompt=negative_prompt,
+        width=512,
+        height=512,
         image=init_image,
         mask_image=mask_image,
         # strength=0.8,
@@ -47,8 +49,8 @@ def inference(pipeline_inpaint, context: ExperimentalContext, prompt: str, guida
 @click.command()
 @options
 def main(seed, device):
-    prompt = 'a bench'
-    # prompt = 'cat wizard, sitting on a bench'
+    # prompt = 'a bench'
+    prompt = 'cat wizard, sitting on a bench'
 
     # img2imgモデルの読み込み
     pipeline_inpaint = StableDiffusionXLInpaintPipeline.from_pretrained(
